@@ -6,7 +6,9 @@ The source code to compile Kilo is supposed to be from a tutorial site, [Build Y
 
 ## How to Compile and Use
 
-Just type `make` to compile and `kplisp <filename>` to use in this repository. Parentheses matching is done automatically, C-e is to eval-last-sexp, [C-s is to save and C-q is to quit](https://github.com/antirez/kilo).
+Just type `make` to compile in this repository, on a standard POSIX system including C compiler and library with Make, as well as `cc -DPURE_LISP_LIB -o kplisp kplisp.c kilo-BYOTE130.c PureLISP.c`
+
+Type `./kplisp <filename>` to use. Parentheses matching is done automatically, Ctrl-e is to eval-last-sexp, [Ctrl-s is to save and Ctrl-q is to quit](https://github.com/antirez/kilo).
 
 <!-- ![demo](https://github.com/ytaki0801/kilo-lisp/blob/master/kilo-lisp.gif) -->
 

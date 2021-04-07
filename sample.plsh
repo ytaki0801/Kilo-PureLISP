@@ -1,3 +1,13 @@
+(car (cdr '(a b c)))
+
+((((lambda (x)
+     (lambda (y)
+       (lambda (z)
+         (cons x (cons y (cons z nil))))))
+   'a)
+  'b)
+ 'c)
+
 (def revapp
   (lambda (x y)
     (cond ((eq x nil) y)
