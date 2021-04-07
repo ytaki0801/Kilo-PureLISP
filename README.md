@@ -1,4 +1,4 @@
-# kplisp: Kilo with C version of PureLISP.sh
+# Kilo with C version of PureLISP.sh
 
 This software is [Kilo](https://github.com/antirez/kilo) with a Pure LISP interpreter, C version of [PureLISP.sh](https://github.com/ytaki0801/PureLISP.sh), including operations of last S-expression evaluating and parenthese matching.
 
