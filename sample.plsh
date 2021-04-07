@@ -1,0 +1,42 @@
+(def revapp
+  (lambda (x y)
+    (cond ((eq x nil) y)
+          (t (revapp
+               (cdr x)
+               (cons (car x) y))))))
+(revapp (revapp '(a b c) '()) '(x y z))
+
+(def map1
+  (lambda (f a)
+     (cond ((eq a nil) nil)
+           (t (cons (f (car a))
+                    (map1 f (cdr a)))))))
+(def al '((Apple . 120) (Orange . 210) (Lemmon . 180)))
+(map1 car al)
+(map1 cdr al)
+
+(def list (lambda x x))
+(def cadr (lambda (x) (car (cdr x))))
+(def let
+  (macro (vvs body)
+    (cons (list 'lambda (map1 car vvs) body)
+          (map1 cadr vvs))))
+(let ((x 'a) (y 'b)) (cons x y))
+
+(def null (lambda (x) (eq x nil)))
+(def assoc
+  (lambda (k vs)
+     (cond ((null vs) nil)
+           ((eq (car (car vs)) k)
+            (car vs))
+           (t (assoc k (cdr vs))))))
+(def sublis
+  (lambda (al L)
+    (cond ((null L) nil)
+          (t (cons (let ((r (assoc (car L) al)))
+                     (cond ((null r) (car L))
+                           (t (cdr r))))
+                   (sublis al (cdr L)))))))
+(def sl '((x . I) (y . you)))
+(sublis sl '(x and y))
+
