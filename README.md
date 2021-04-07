@@ -1,6 +1,6 @@
 # Kilo with C version of PureLISP.sh
 
-This software is [Kilo Texteditor](https://github.com/antirez/kilo) with a Pure LISP interpreter, C version of [PureLISP.sh](https://github.com/ytaki0801/PureLISP.sh), including operations of last S-expression evaluating and parenthese matching.
+This software is [Kilo texteditor](https://github.com/antirez/kilo) with a Pure LISP interpreter, C version of [PureLISP.sh](https://github.com/ytaki0801/PureLISP.sh), including operations of last S-expression evaluating and parenthese matching.
 
 The source code to compile Kilo is supposed to be from a tutorial site, [Build Your Own Text Editor](https://viewsourcecode.org/snaptoken/kilo/) Step 130, which is copied and arranged as `kilo-BYOTE130.c` and `kilo-BYOTE130.h` in this repository.
 
@@ -10,7 +10,7 @@ Just type `make` to compile in this repository, on a standard POSIX system inclu
 
 Type `./kplisp <filename>` to use. Parentheses matching is done automatically, Ctrl-e is to eval-last-sexp, [Ctrl-s is to save and Ctrl-q is to quit](https://github.com/antirez/kilo).
 
-<!-- ![demo](https://github.com/ytaki0801/kilo-lisp/blob/master/kilo-lisp.gif) -->
+![demo](https://github.com/ytaki0801/Kilo-PureLISP/blob/master/Kilo-PureLISP_demo.gif)
 
 For the `PureLISP.sh` specification, see [PureLISP.sh repository](https://github.com/ytaki0801/PureLISP.sh) and `sample.plsh`.
 
