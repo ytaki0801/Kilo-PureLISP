@@ -326,10 +326,12 @@ int main(void)
   char in[SSTR_MAX];
   printf("S> ");
   while ((fgets(in, SSTR_MAX, stdin)) != NULL) {
-    in[strlen(in) - 1] = '\0';
-    s_eval_retval[0] = '\0';
-    s_eval_string(in);
-    printf("%s\n", s_eval_retval);
+    if (in[0] != '\n') {
+      in[strlen(in) - 1] = '\0';
+      s_eval_retval[0] = '\0';
+      s_eval_string(in);
+      printf("%s\n", s_eval_retval);
+    }
     printf("S> ");
   }
 
