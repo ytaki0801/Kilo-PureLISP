@@ -252,10 +252,10 @@ node_t s_apply(node_t f, node_t v)
 #define S_MACRO  (str_to_node("macro"))
 #define S_DEF    (str_to_node("def"))
 
-node_t s_evars(node_t v, node_t a)
+node_t s_evals(node_t v, node_t a)
 {
   if (s_null(v)) return NULL;
-  else return cons(s_eval(car(v), a), s_evars(cdr(v), a));
+  else return cons(s_eval(car(v), a), s_evals(cdr(v), a));
 }
 
 node_t s_eval(node_t e, node_t a)
@@ -281,22 +281,22 @@ node_t s_eval(node_t e, node_t a)
       return name;
     } else {
       node_t efunc = s_eval(car(e), a);
-      node_t fvars = s_evars(cdr(e), a);
-      if (atom(efunc)) return s_apply(efunc, fvars);
+      node_t fvals = s_evals(cdr(e), a);
+      if (atom(efunc)) return s_apply(efunc, fvals);
       else {
         node_t lname = car(efunc);
         node_t lvars = cadr(efunc);
         node_t lbody = caddr(efunc);
         node_t lenvs = cadddr(efunc);
         node_t fenvs = a;
-        if (eq(lname, S_MACRO)) fvars = cdr(e);
+        if (eq(lname, S_MACRO)) fvals = cdr(e);
         e = lbody;
         if (s_null(lvars))
           a = lenvs;
         else if (atom(lvars))
-          a = s_append(cons(cons(lvars, fvars), NULL), lenvs);
+          a = s_append(cons(cons(lvars, fvals), NULL), lenvs);
         else
-          a = s_append(s_pair(lvars, fvars), lenvs);
+          a = s_append(s_pair(lvars, fvals), lenvs);
         if (eq(lname, S_MACRO)) return s_eval(s_eval(e, a), fenvs);
       }
     }
