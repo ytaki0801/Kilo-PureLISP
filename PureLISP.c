@@ -6,16 +6,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
-#define SSTR_MAX 4096
+#include "PureLISP.h"
 
 // Basic functions for conscel operations:
 // cons, car, cdr, eq, atom
 
-#include "PureLISP.h"
-
-node_t node(value_t value, enum NODE_TAG tag);
+node_t node(value_t value, enum NODE_TAG tag)
+{
+  node_t n = (node_t)malloc(sizeof(_node_t));
+  n->value = value; n->tag = tag;
+  return (n);
+}
 
 typedef struct _cons_t_ {
   node_t x, y;
@@ -37,13 +39,6 @@ node_t cdr(node_t s) {
 
 #define atom(s)   (eq(s, NULL) || n_strg(s))
 
-node_t node(value_t value, enum NODE_TAG tag)
-{
-  node_t n = (node_t)malloc(sizeof(_node_t));
-  n->value = value; n->tag = tag;
-  return (n);
-}
-
 node_t cons(node_t x, node_t y)
 {
   cons_t c = (cons_t)malloc(sizeof(_cons_t));
@@ -59,15 +54,6 @@ int eq(node_t s1, node_t s2)
   else if (n_cons(s1) || n_cons(s2)) return (0);
   else return (!strcmp(node_to_str(s1), node_to_str(s2)));
 }
-
-#define S_T    (str_to_node("t"))
-#define S_NIL  (str_to_node("nil"))
-
-#define S_CONS (str_to_node("cons"))
-#define S_CAR  (str_to_node("car"))
-#define S_CDR  (str_to_node("cdr"))
-#define S_EQ   (str_to_node("eq"))
-#define S_ATOM (str_to_node("atom"))
 
 // S-expression input: s_lex and s_syn
 
@@ -161,8 +147,15 @@ void s_string(node_t s)
 // The evaluator: s_eval and utility functions
 
 node_t s_eval(node_t e, node_t a);
-node_t s_apply(node_t f, node_t v);
 node_t GENV;
+
+#define S_T    (str_to_node("t"))
+#define S_NIL  (str_to_node("nil"))
+#define S_CONS (str_to_node("cons"))
+#define S_CAR  (str_to_node("car"))
+#define S_CDR  (str_to_node("cdr"))
+#define S_EQ   (str_to_node("eq"))
+#define S_ATOM (str_to_node("atom"))
 
 node_t caar(node_t x) { return car(car(x)); }
 node_t cadr(node_t x) { return car(cdr(x)); }
@@ -200,15 +193,15 @@ node_t s_assq(node_t k, node_t v)
 
 #define S_LENGTH  (str_to_node("length"))
 
-int s_length_r(node_t x, int c)
+int length_r(node_t x, int c)
 {
   if (s_null(x)) return c;
-  else return s_length_r(cdr(x), c + 1);
+  else return length_r(cdr(x), c + 1);
 }
-node_t s_length(node_t x)
+node_t length(node_t x)
 {
   char *tmp = (char *)malloc(64);
-  sprintf(tmp, "%d", s_length_r(x, 0));
+  sprintf(tmp, "%d", length_r(x, 0));
   return str_to_node(tmp);
 }
 
@@ -216,7 +209,7 @@ node_t s_cond(node_t c, node_t a)
 {
   if (s_null(c)) return NULL;
   else if (eq(s_eval(caar(c), a), S_T))
-    return s_eval(cadar(c), a);
+    return cadar(c);
   else
     return s_cond(cdr(c), a);
 }
@@ -237,65 +230,79 @@ node_t s_lookup(node_t t, node_t a)
   }
 }
 
-node_t s_eargs(node_t v, node_t a)
+node_t s_bool2node(int e)
 {
-  if (s_null(v)) return NULL;
-  else return cons(s_eval(car(v), a), s_eargs(cdr(v), a));
+  if (e) return S_T; else return NULL;
 }
 
+node_t s_apply(node_t f, node_t v)
+{
+  if      (eq(f, S_CONS))   return cons(car(v), cadr(v));
+  else if (eq(f, S_CAR))    return car(car(v));
+  else if (eq(f, S_CDR))    return cdr(car(v));
+  else if (eq(f, S_EQ))     return s_bool2node(eq(car(v), cadr(v)));
+  else if (eq(f, S_ATOM))   return s_bool2node(atom(car(v)));
+  else if (eq(f, S_LENGTH)) return length(car(v));
+  else return NULL;
+}
+ 
 #define S_QUOTE  (str_to_node("quote"))
 #define S_COND   (str_to_node("cond"))
 #define S_LAMBDA (str_to_node("lambda"))
 #define S_MACRO  (str_to_node("macro"))
 #define S_DEF    (str_to_node("def"))
 
+node_t s_evars(node_t v, node_t a)
+{
+  if (s_null(v)) return NULL;
+  else return cons(s_eval(car(v), a), s_evars(cdr(v), a));
+}
+
 node_t s_eval(node_t e, node_t a)
 {
-  if (atom(e)) return s_lookup(e, a);
-  else if (eq(car(e), S_QUOTE)) return cadr(e);
-  else if (eq(car(e), S_COND))  return s_cond(cdr(e), a);
-  else if (eq(car(e), S_LAMBDA) || eq(car(e), S_MACRO))
-    return cons(car(e),
-                cons(cadr(e),
-                     cons(caddr(e), cons(a, NULL))));
-  else if (eq(car(e), S_DEF)) {
-    GENV = cons(cons(cadr(e), s_eval(caddr(e), a)), GENV);
-    return cadr(e);
-  } else {
-    node_t r = s_eval(car(e), a);
-    if (!atom(r) && eq(car(r), S_MACRO))
-      return s_eval(s_apply(r, cdr(e)), a);
-    else {
-      return s_apply(r, s_eargs(cdr(e), a));
+  while (1) {
+    if (atom(e)) {
+      return s_lookup(e, a);
+    } else if (eq(car(e), S_QUOTE)) {
+      node_t vals = cadr(e);
+      return vals;
+    } else if (eq(car(e), S_COND)) {
+      node_t seqs = cdr(e);
+      e = s_cond(seqs, a);
+    } else if (eq(car(e), S_LAMBDA) || eq(car(e), S_MACRO)) {
+      node_t name = car(e);
+      node_t vars = cadr(e);
+      node_t body = caddr(e);
+      return cons(name, cons(vars, cons(body, cons(a, NULL))));
+    } else if (eq(car(e), S_DEF)) {
+      node_t name = cadr(e);
+      node_t vals = caddr(e);
+      GENV = cons(cons(name, s_eval(vals, a)), GENV);
+      return name;
+    } else {
+      node_t efunc = s_eval(car(e), a);
+      node_t fvars = s_evars(cdr(e), a);
+      if (atom(efunc)) return s_apply(efunc, fvars);
+      else {
+        node_t lname = car(efunc);
+        node_t lvars = cadr(efunc);
+        node_t lbody = caddr(efunc);
+        node_t lenvs = cadddr(efunc);
+        node_t fenvs = a;
+        if (eq(lname, S_MACRO)) fvars = cdr(e);
+        e = lbody;
+        if (s_null(lvars))
+          a = lenvs;
+        else if (atom(lvars))
+          a = s_append(cons(cons(lvars, fvars), NULL), lenvs);
+        else
+          a = s_append(s_pair(lvars, fvars), lenvs);
+        if (eq(lname, S_MACRO)) return s_eval(s_eval(e, a), fenvs);
+      }
     }
   }
 }
 
-node_t s_apply(node_t f, node_t v)
-{
-  if (atom(f)) {
-    if      (eq(f, S_CONS)) return cons(car(v), cadr(v));
-    else if (eq(f, S_CAR))  return car(car(v));
-    else if (eq(f, S_CDR))  return cdr(car(v));
-    else if (eq(f, S_EQ))
-           if (eq(car(v), cadr(v))) return S_T; else return NULL;
-    else if (eq(f, S_ATOM))
-           if (atom(car(v))) return S_T; else return NULL;
-    else if (eq(f, S_LENGTH)) return s_length(car(v));
-    else return NULL;
-  } else {
-    node_t lvars = cadr(f);
-    node_t lbody = caddr(f);
-    node_t lenvs = cadddr(f);
-    if (atom(lvars)) {
-      if (s_null(lvars)) return s_eval(lbody, lenvs);
-      else return s_eval(lbody,
-                         s_append(cons(cons(lvars, v), NULL),
-                                  lenvs));
-    } else return s_eval(lbody, s_append(s_pair(lvars, v), lenvs));
-  }
-}
- 
 // Interface of eval_string to C
 
 void s_eval_string(char *s)

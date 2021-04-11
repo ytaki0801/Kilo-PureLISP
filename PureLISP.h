@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#define SSTR_MAX 4096
+
 typedef uintptr_t value_t;
 enum NODE_TAG { NODE_STRG, NODE_CONS };
 

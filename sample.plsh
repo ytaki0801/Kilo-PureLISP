@@ -8,14 +8,6 @@
   'b)
  'c)
 
-(def revapp
-  (lambda (x y)
-    (cond ((eq x nil) y)
-          (t (revapp
-               (cdr x)
-               (cons (car x) y))))))
-(revapp (revapp '(a b c) '()) '(x y z))
-
 (def map1
   (lambda (f a)
      (cond ((eq a nil) nil)
@@ -50,3 +42,31 @@
 (def sl '((x . I) (y . you)))
 (sublis sl '(x and y))
 
+(def revapp
+  (lambda (x y)
+    (cond ((eq x nil) y)
+          (t (revapp
+               (cdr x)
+               (cons (car x) y))))))
+(def reverse (lambda (x) (revapp x nil)))
+(reverse '(a b c d e))
+(def append
+  (lambda (x y)
+    (revapp (revapp x nil) y)))
+(append '(a b c) '(x y z))
+
+(def + append)
+(def 1- (lambda (x) (cdr x)))
+(def 0 nil)
+(def 1 '(p))
+(def 10 '(p p p p p p p p p p))
+(def N (+ 10 10))
+(length N)
+(length
+  (((lambda (g) (g g))
+      (lambda (g)
+        (lambda (n a b)
+          (cond ((eq n 0) a)
+                (t ((g g) (cdr n)
+                          b (append a b)))))))
+   N 0 1))
