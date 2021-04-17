@@ -14,6 +14,20 @@ Type `./kplisp <filename>` to use. Parentheses matching is done automatically, C
 
 For the `PureLISP.sh` specification, see [PureLISP.sh repository](https://github.com/ytaki0801/PureLISP.sh) and `sample.plsh`.
 
+## PureLISP.c
+
+You can also compile `PureLISP.c` with `PureLISP.h` alone to use in a simple one-line-input REPL like the following. It is written in standard C specification only so enable to compile by not only GCC or Clang but also C compiler of Visual Studio Community or [Tiny C Compiler](https://bellard.org/tcc/).
+
+```
+$ cc PureLISP.c
+$ ./a.out
+S> (def reduce (lambda (f L i) (cond ((eq L nil) i) (t (f (car L) (reduce f (cdr L) i))))))
+reduce
+S> (reduce cons '(a b c) '(d e f g))
+(a b c d e f g)
+S> [Type Ctrl-d or Ctrl-c to exit]
+```
+
 ## TODO
 
 * Full implemention of eval error handling in the interpreter.

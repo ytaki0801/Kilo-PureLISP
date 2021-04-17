@@ -15,5 +15,5 @@ plsh: PureLISP.c PureLISP.h
 	cc -o $@ PureLISP.c
 
 clean:
-	rm -f *.o kplisp plsh
+	rm -f *.o kplisp plsh a.out
 
