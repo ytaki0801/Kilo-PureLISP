@@ -14,7 +14,7 @@
 
 node_t node(value_t value, enum NODE_TAG tag)
 {
-  node_t n = (node_t)malloc(sizeof(_node_t));
+  node_t n = malloc(sizeof(node_t));
   n->value = value; n->tag = tag;
   return (n);
 }
@@ -26,22 +26,25 @@ typedef struct _cons_t_ {
 #define str_to_node(s)  (node((value_t)(s), NODE_STRG))
 #define node_to_str(s)  ((char *)(s->value))
 
-node_t car(node_t s) {
-  if (s == NULL) return NULL; else return ((cons_t)(s->value))->x;
-}
-
-node_t cdr(node_t s) {
-  if (s == NULL) return NULL; else return ((cons_t)(s->value))->y;
-}
-
 #define n_strg(s)  (s->tag == NODE_STRG)
 #define n_cons(s)  (s->tag == NODE_CONS)
 
+int eq(node_t s1, node_t s2);
 #define atom(s)   (eq(s, NULL) || n_strg(s))
+
+node_t car(node_t s) {
+  if (s == NULL || atom(s)) return NULL;
+  else return ((cons_t)(s->value))->x;
+}
+
+node_t cdr(node_t s) {
+  if (s == NULL || atom(s)) return NULL;
+  else return ((cons_t)(s->value))->y;
+}
 
 node_t cons(node_t x, node_t y)
 {
-  cons_t c = (cons_t)malloc(sizeof(_cons_t));
+  cons_t c = malloc(sizeof(cons_t));
   c->x = x; c->y = y;
   node_t n = node((value_t)c, NODE_CONS);
   return (n);
@@ -101,7 +104,7 @@ node_t s_syn(char *s[], int *pos)
     } else
       return (r);
   } else {
-    char *tr = (char *)malloc(sizeof(t));
+    char *tr = malloc((strlen(t) + 1) * sizeof(*tr));
     sprintf(tr, "%s", t);
     node_t tn = str_to_node(tr);
     if (*pos != -1 && s[*pos][0] == '\'') {
@@ -200,7 +203,7 @@ int length_r(node_t x, int c)
 }
 node_t length(node_t x)
 {
-  char *tmp = (char *)malloc(64);
+  char *tmp = malloc(SSTR_MAX * sizeof(*tmp));
   sprintf(tmp, "%d", length_r(x, 0));
   return str_to_node(tmp);
 }
@@ -326,12 +329,16 @@ void s_init_purelisp(void)
 #ifndef PURE_LISP_LIB
 // Sample main to use s_eval_string
 
-int main(void)
+int main(int argc, char *argv[])
 {
+  int prompt = 1;
+
+  if (argc == 2 && !(strcmp(argv[1], "-snl")))
+    prompt = 0;
   s_init_purelisp();
 
   char in[SSTR_MAX];
-  printf("S> ");
+  if (prompt) printf("S> ");
   while ((fgets(in, SSTR_MAX, stdin)) != NULL) {
     if (in[0] != '\n') {
       in[strlen(in) - 1] = '\0';
@@ -339,7 +346,7 @@ int main(void)
       s_eval_string(in);
       printf("%s\n", s_eval_retval);
     }
-    printf("S> ");
+    if (prompt) printf("S> ");
   }
 
   return (0);
