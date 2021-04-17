@@ -6,7 +6,7 @@ The source code to compile Kilo is supposed to be from a tutorial site, [Build Y
 
 ## How to Compile and Use
 
-* Docker image: `docker run --rm -it ytaki0801/kplisp` for amd64, arm64/v8 and arm/v7
+* Docker image: `docker run --rm -it ytaki0801/kplisp`
 
 Just type `make` to compile in this repository, on a standard POSIX system including C compiler and library with Make, as well as `cc -DPURE_LISP_LIB -o kplisp kplisp.c kilo-BYOTE130.c PureLISP.c`
 
