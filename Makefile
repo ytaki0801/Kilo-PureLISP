@@ -1,14 +1,19 @@
-NAME = kplisp
+KPSRC = kilo-BYOTE130.c PureLISP.c kplisp.c
+KPOBJ = $(KPSRC:%.c=%.o)
 
-$(NAME): $(NAME).o kilo-BYOTE130.o PureLISP.o
-	cc -o $@ *.o
+kplisp: $(KPOBJ)
+	cc -o $@ $^
 
-PureLISP.o: PureLISP.c 
-	cc -c -DPURE_LISP_LIB PureLISP.c
+.c.o:
+	cc -c -DPURE_LISP_LIB $<
 
-kilo-BYOTE130.o: kilo-BYOTE130.c kilo-BYOTE130.h
-	cc -c -DPURE_LISP_LIB kilo-BYOTE130.c
+kilo-BYOTE130.o: kilo-BYOTE130.h PureLISP.h
+PureLISP.o: PureLISP.h
+kplisp.o: kilo-BYOTE130.h PureLISP.h
+
+plsh: PureLISP.c PureLISP.h
+	cc -o $@ PureLISP.c
 
 clean:
-	rm -f $(NAME) *.o a.out
+	rm -f *.o kplisp plsh
 
