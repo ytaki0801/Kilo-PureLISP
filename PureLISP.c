@@ -89,6 +89,7 @@ node_t s_syn(char *s[], int *pos)
   *pos = *pos - 1;
 
   if (t[0] == ')') {
+    if (*pos <= 0) return NULL;
     node_t r = NULL;
     while (s[*pos][0] != '(') {
       if (s[*pos][0] == '.') {
